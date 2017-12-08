@@ -1,0 +1,91 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<h1>こんにちは、<%= current_user.username %>さん</h1>
+<p>ユーザー用ページです。</p>
+
+<h2>レンサ　POST</h2>
+<ul class="list-group">
+    <% @posts.each do |post| %>
+    <li class="list-group-item">
+        <p class="postId">投稿 ID:<%= post.id %></p>
+        <span class="badge"><%= link_to '編集', edit_post_path(post), class: 'command' %></span>
+        <span class="badge"><%= link_to '削除', post_path(post), method: :delete, class: 'command', data: { confirm: '本当に削除しても良いですか？' } %></span>
+        <h3><%= link_to post.title, post_path(post) %></h3>
+        <p><%= post.body %></p>
+        <button data-postid="<%= post.id %>" id="like" class="btn btn-primary" type="button">いいね<i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+            <span id="results" class="badge"></span>
+        </button>
+        <button id="open" class="btn btn-info" type="button">コメントする<span id="results" class="badge"></span>
+        </button>
+        <h3>コメント</h3>
+        <% if post.comments.any? %>
+        <ul>
+            <% post.comments.each do |comment| %>
+            <li>
+                <%= comment.body.html_safe %>
+                <%= link_to '[削除]', post_comment_path(post, comment), method: :delete, class: 'command', data: { confirm: '本当に削除しても良いですか？' } %>
+            </li>
+            <% end %>
+        </ul>
+        <% end %>
+    </li>
+    <div id="modal" class="hidden">
+        <%= form_for([post, post.comments.build]) do |f| %>
+            <p><%= f.text_field :body, placeholder: 'コメントを送る' %></p>
+            <p><%= f.submit %></p>
+        <% end %>
+        <div id="close">
+            Close
+        </div>
+    </div>
+    <div id="mask" class="hidden"></div>
+    <% end %>
+</ul>
+
+<script>
+      $('button').click(function(event){
+        var a = $(this).children('span');
+        event.preventDefault();
+          
+          var postId = $(this).data('postid');
+          $.ajax("http://localhost:3000/posts/" + postId + "/likes",
+          {
+              type: 'post',
+              dataType: "json"
+          }
+        )
+        .done(function(data){
+            $(a).html(data.likescount);
+            console.log(data);
+            //$(".results").empty();
+            //$(".results").append(data.likescount);
+            
+        })
+        .fail(function(){
+            window.alert("正しく通信できなかったよ");
+        });
+      });
+  (function() {
+  'use strict';
+
+  var open = document.getElementById('open');
+  var close = document.getElementById('close');
+  var modal = document.getElementById('modal');
+  var mask = document.getElementById('mask');
+
+  open.addEventListener('click', function() {
+    modal.className = '';
+    mask.className = '';
+  });
+
+  close.addEventListener('click', function() {
+    modal.className = 'hidden';
+    mask.className = 'hidden';
+  });
+
+  mask.addEventListener('click', function() {
+    // modal.className = 'hidden';
+    // mask.className = 'hidden';
+    close.click();
+  });
+})();
+</script>

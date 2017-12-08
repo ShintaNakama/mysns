@@ -1,0 +1,88 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<h2>
+  <p id="userId"><%= @user %></p>
+  <p id="postId"><%= @post.id %></p>
+<P>タイトル:<%= @post.title %></p>
+</h2>
+<p><%= simple_format @post.body %></p>
+    
+<button id="like">いいね<i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+  <div id="results"></div>
+</button>
+
+<button id="delete">とりけす<i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+  <div id="resultsDel"></div>
+</button>
+<%= link_to "いいね","", class: 'like' %>
+      
+<%= link_to "とりけし","", class: 'delete' %>
+<h3>コメント</h3>
+<% if @post.comments.any? %>
+<ul>
+<% @post.comments.each do |comment| %>
+<li>
+  <%= comment.body.html_safe %>
+  <%= link_to '[削除]', post_comment_path(@post, comment), method: :delete, class: 'command', data: { confirm: '本当に削除しても良いですか？' } %>
+</li>
+<% end %>
+</ul>
+<% end %>
+<%= form_for([@post, @post.comments.build]) do |f| %>
+
+<p>
+  <%= f.text_field :body, placeholder: 'コメントを送る' %>
+</p>
+
+<p><%= f.submit %></p>
+
+<% end %>
+<script>
+
+      $('#like').click(function(event){
+        
+        event.preventDefault();
+          $("#results").html("<img src='../images/gif-load.gif'/>");
+          var postId = $('#postId').html();
+          $.ajax("http://localhost:3000/posts/" + postId + "/likes",
+          {
+              type: 'post',
+              dataType: "json"
+          }
+        )
+        .done(function(data){
+            
+            console.log(data);
+            $("#results").empty();
+            $("#results").append(data.likescount);
+            
+        })
+        .fail(function(){
+            window.alert("正しく通信できなかったよ");
+        });
+      });
+
+      $('#delete').click(function(event){
+        
+        event.preventDefault();
+          $("#resultsDel").html("<img src='../images/gif-load.gif'/>");
+          var postId = $('#postId').html();
+          var userId = $('#userId').html();
+          $.ajax("http://localhost:3000/posts/" + postId + "/likes/" + userId,
+          {
+              type: 'delete',
+              dataType: "json"
+          }
+        )
+        .done(function(data){
+            
+            console.log(data);
+            $("#resultsDel").empty();
+            $("#resultsDel").append(data.likescount);
+            
+        })
+        .fail(function(){
+            window.alert("正しく通信できなかったよ");
+        });
+      });
+  </script>
