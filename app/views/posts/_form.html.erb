@@ -1,4 +1,9 @@
+
 <%= form_for @post do |f| %>
+
+<p>
+  <%= f.hidden_field :user_id, :value => @postuserid %>
+</p>
 
 <p>
   <%= f.text_field :title, placeholder: 'title' %>

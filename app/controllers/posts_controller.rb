@@ -4,7 +4,7 @@ class PostsController < ApplicationController
         @user = current_user.id
         @post = Post.find(params[:id])
         @like = Like.find_by(user_id: current_user.id, post_id: params[:id])
-        @data = JSON.dump({"result" => "ok", "likes_count" => @post.likes_count})
+        @data = JSON.dump({"result" => "ok", "likes_count" => @post.likes.count})
         @dataLikesCount = @data["likes_count"]
         
         # @likes = Like.where(post_id: params[:id])
@@ -12,6 +12,8 @@ class PostsController < ApplicationController
 
     def new
         @post = Post.new
+        @postuserid = current_user.id
+        @postuser = current_user.username
     end
 
     def create
@@ -26,6 +28,7 @@ class PostsController < ApplicationController
 
     def edit
         @post = Post.find(params[:id])
+        @postuser = current_user.username
     end
 
     def update
@@ -46,6 +49,6 @@ class PostsController < ApplicationController
 
     private
     def post_params
-        params.require(:post).permit(:title, :body)
+        params.require(:post).permit(:user_id, :title, :body)
     end
 end

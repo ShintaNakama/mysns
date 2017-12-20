@@ -2,9 +2,36 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 .command {
-    color: white;
+    color: #fff;
     font-size: 1px;
 }
+.comdelete {
+    color: #787373;
+    font-size: 1px;
+}
+#post_body {
+    line-height: 50px;
+}
+#commentuser {
+    font-weight: bold;
+    
+}
+.panel-default {
+    margin-top: 10px;
+}
+#submit {
+    border-radius: 10px; 
+}
+#submit:hover {
+    opacity: 0.6;
+    background-color: tomato;
+
+}
+.panel-default button {
+    cursor: pointer;
+    text-decoration: none;
+}
+
 .list-group-item h3 {
     padding: 0px;
 }
@@ -20,7 +47,9 @@
     line-height: 40px;
     margin: 15px auto 0;
   }
-  
+  #close:hover{
+    background: skyblue;  
+  }  
   #mask {
     background: rgba(0, 0, 0, 0.4);
     position: fixed;
@@ -36,8 +65,8 @@
     width: 500px;
     padding: 20px;
     border-radius: 4px;
-    position: absolute;
-    top: 40px;
+    position: fixed;
+    top: 100px;
     left: 0;
     right: 0;
     margin: 0 auto;

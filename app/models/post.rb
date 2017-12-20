@@ -1,10 +1,9 @@
 class Post < ApplicationRecord
+    belongs_to :user
     has_many :comments, dependent: :destroy
     has_many :likes, dependent: :destroy
-    validates :title, presence: true, length: { maximum: 40}
-    validates :body, presence: true, length: { maximum: 250}
-    def like_user(user_id)
-        likes.find_by(user_id: user_id)
-    end
+    has_many :comment_likes, dependent: :destroy
     
+    validates :title, presence: true
+    validates :body, presence: true
 end

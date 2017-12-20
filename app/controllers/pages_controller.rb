@@ -4,6 +4,7 @@ class PagesController < ApplicationController
 
   def show
     @posts = Post.all.order(created_at:'desc')
+    @typename = LikeType.all
     
   end
 

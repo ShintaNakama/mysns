@@ -3,59 +3,88 @@
 <p>ユーザー用ページです。</p>
 
 <h2>レンサ　POST</h2>
+
 <ul class="list-group">
     <% @posts.each do |post| %>
     <li class="list-group-item">
-        <p class="postId">投稿 ID:<%= post.id %></p>
+        <p class="postId">投稿 ID：<%= post.id %></p>
+        <p>投稿者：<%= post.user.username %></p>
         <span class="badge"><%= link_to '編集', edit_post_path(post), class: 'command' %></span>
         <span class="badge"><%= link_to '削除', post_path(post), method: :delete, class: 'command', data: { confirm: '本当に削除しても良いですか？' } %></span>
         <h3><%= link_to post.title, post_path(post) %></h3>
-        <p><%= post.body %></p>
+        <p id="post_body"><%= post.body %></p>
         <button data-postid="<%= post.id %>" id="like" class="btn btn-primary" type="button">いいね<i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
             <span id="results" class="badge"></span>
         </button>
-        <button id="open" class="btn btn-info" type="button">コメントする<span id="results" class="badge"></span>
+        <button data-com="<%= post.id %>" id="open" class="btn btn-info" type="button">コメントする<span id="results" class="badge"></span>
         </button>
-        <h3>コメント</h3>
-        <% if post.comments.any? %>
-        <ul>
-            <% post.comments.each do |comment| %>
-            <li>
-                <%= comment.body.html_safe %>
-                <%= link_to '[削除]', post_comment_path(post, comment), method: :delete, class: 'command', data: { confirm: '本当に削除しても良いですか？' } %>
-            </li>
-            <% end %>
-        </ul>
-        <% end %>
-    </li>
-    <div id="modal" class="hidden">
-        <%= form_for([post, post.comments.build]) do |f| %>
-            <p><%= f.text_field :body, placeholder: 'コメントを送る' %></p>
-            <p><%= f.submit %></p>
-        <% end %>
-        <div id="close">
-            Close
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <button class="btn btn-success" type="button"><h3 class="panel-title">コメント一覧</h3></button>
+            </div>
+            <div id="panel" class="panel-body">
+                <% if post.comments.any? %>
+                    <ul>
+                        <% post.comments.each do |comment| %>
+                            <li>
+                                <p id="commentuser"><%= comment.user.username %>さんのコメント</p>
+                                <%= comment.body.html_safe %>
+                                
+                                <button data-postid="<%= post.id %>" data-commentid="<%= comment.id %>" data-type="1" id="commentlike" class="commentLikeButton" type="button"><%=  @typename[0].type_name %><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                                    <span id="results" class="badge"></span>
+                                    
+                                </button>
+                                <button data-postid="<%= post.id %>" data-commentid="<%= comment.id %>" data-type="2" id="commentlike" class="commentLikeButton" type="button"><%=  @typename[1].type_name %><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                                    <span id="results" class="badge"></span>
+                                    
+                                </button>
+                                <button data-postid="<%= post.id %>" data-commentid="<%= comment.id %>" data-type="3" id="commentlike" class="commentLikeButton" type="button"><%=  @typename[2].type_name %><i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                                    <span id="results" class="badge"></span>
+                                    
+                                </button>
+                                
+                                <%= link_to '[コメント削除]', post_comment_path(post, comment), method: :delete, class: 'comdelete', data: { confirm: '本当に削除しても良いですか？' } %>
+                            </li>
+                        <% end %>
+                    </ul>
+                <% end %>
+            </div>
         </div>
-    </div>
-    <div id="mask" class="hidden"></div>
+    </li>
     <% end %>
 </ul>
-
+<div data-modal="modal" id="modal" class="hidden">
+    <%= form_for("") do |f| %>
+        <%= f.fields_for :comment do |df| %>
+        <p>投稿 ID:<span id="modalPostId"></span></p>
+        <%= df.hidden_field :user_id, :value => current_user.id %>
+        
+        <p><%= df.text_field :body, placeholder: 'コメント内容' %></p>
+        <%= df.submit "コメント", id: "submit"%>
+        <% end %>
+    <% end %>
+    <div data-close="close" id="close">Close</div>
+</div>
+<div id="back-to-top" style="position:fixed;right:300px;bottom:50px"><a href="#"><img src="../images/back-to.png"></a></div>
+<div id="pos" style="position:fixed;left:15px;bottom:15px"></div>
+<div id="mask" class="hidden"></div>
 <script>
-      $('button').click(function(event){
+    //いいねボタン(POST)の実装
+    $('button.btn-primary').click(function(event){
         var a = $(this).children('span');
         event.preventDefault();
           
-          var postId = $(this).data('postid');
-          $.ajax("http://localhost:3000/posts/" + postId + "/likes",
-          {
-              type: 'post',
-              dataType: "json"
-          }
+        var postId = $(this).data('postid');
+        $.ajax("http://localhost:3000/posts/" + postId + "/likes",
+            {
+                type: 'post',
+                dataType: "json"
+            }
         )
         .done(function(data){
             $(a).html(data.likescount);
-            console.log(data);
+            
             //$(".results").empty();
             //$(".results").append(data.likescount);
             
@@ -63,29 +92,73 @@
         .fail(function(){
             window.alert("正しく通信できなかったよ");
         });
-      });
-  (function() {
-  'use strict';
+    });
+    //いいねボタン(COMMENT Like)の実装
+    $('button.commentLikeButton').click(function(event){
+        var liketype = $(this).data('type');
+        var a = $(this).children('span');
+        var postId = $(this).data('postid');
+        var commentId = $(this).data('commentid');
+        console.log(postId);
+        console.log(commentId);
+        console.log(liketype);
+        $.ajax("http://localhost:3000/posts/" + postId + "/comments/"+ commentId + "/comments_likes",
+            {
+                type: 'post',
+                data: {like_type_id: liketype},
+                dataType: "json"
+            }
+        )
+        .done(function(data){
+            //$(a).html(data.result);
+            $(a).html(data.commentslikescount);
+            $(a).html(data.commentsbadscount);
+            $(a).html(data.commentsgreatscount);
+        })
+        .fail(function(){
+            window.alert("正しく通信できなかったよ");
+        });
+    });
+    
+    //コメントボタンの実装(コメント入力のモーダルが開く)
+    $('button.btn-info').click(function(event){
+        
+        var postCommentId = $(this).data('com');
+        console.log(postCommentId);
+        
+        $('#mask').removeClass('hidden');
+        $('#modal').removeClass('hidden');
+        $('#modalPostId').text(postCommentId);
+        $('#modal form').prop("action", "/posts/" + postCommentId + "/comments");
+    });
+    $('#close').click(function(event){
+        $('#mask').addClass('hidden');
+        $('#modal').addClass('hidden');
+    });
+    //var panelId = $('button.btn-success').data('panelid');
+        //console.log(panelId);
 
-  var open = document.getElementById('open');
-  var close = document.getElementById('close');
-  var modal = document.getElementById('modal');
-  var mask = document.getElementById('mask');
-
-  open.addEventListener('click', function() {
-    modal.className = '';
-    mask.className = '';
-  });
-
-  close.addEventListener('click', function() {
-    modal.className = 'hidden';
-    mask.className = 'hidden';
-  });
-
-  mask.addEventListener('click', function() {
-    // modal.className = 'hidden';
-    // mask.className = 'hidden';
-    close.click();
-  });
-})();
+    //コメント一覧の表示を制限する。最初は全てのパネルを非表示に
+    $('.panel-body').hide();
+    $('button.btn-success').click(function(event){
+        $(this).parent().next().slideToggle(300);
+    });
+    //画面の最上に戻るボタンの実装
+    // #back-to-topを消す
+    $('#back-to-top').hide();
+    // スクロールが十分されたら#back-to-topを表示、スクロールが戻ったら非表示
+    $(window).scroll(function() {
+        $('#pos').text($(this).scrollTop());
+        if ($(this).scrollTop() > 60) {
+            $('#back-to-top').fadeIn();
+        } else {
+            $('#back-to-top').fadeOut();
+        }
+    });
+    // #back-to-topがクリックされたら上に戻る
+    $('#back-to-top a').click(function(){
+        $('body').animate({
+            scrollTop:0
+        }, 500);
+    });
 </script>

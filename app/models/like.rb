@@ -1,5 +1,7 @@
 class Like < ApplicationRecord
-    belongs_to :post, counter_cache: :likes_count
+    
+    belongs_to :post
     belongs_to :user
-
+    
+    
 end

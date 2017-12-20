@@ -5,9 +5,13 @@ Rails.application.routes.draw do
   get 'pages/show'
   
   resources :posts do
-    resources :comments
+    resources :comments do
+      resources :comments_likes, only: [:create, :destroy]
+    end
     resources :likes, only: [:create, :destroy]
-
   end
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
+
+
+# post 'posts/:id/comments/:id/comments_likes/'
