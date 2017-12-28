@@ -18,7 +18,8 @@ class PostsController < ApplicationController
 
     def create
         @post = Post.new(post_params)
-        if @post.save
+        
+        if @post.save!
             redirect_to pages_show_path
         else
             # render plain: @post.errors.inspect 
@@ -28,12 +29,14 @@ class PostsController < ApplicationController
 
     def edit
         @post = Post.find(params[:id])
+        @postuserid = current_user.id
         @postuser = current_user.username
+        
     end
 
     def update
         @post = Post.find(params[:id])
-        if @post.update(post_params)
+        if @post.update!(post_params)
             redirect_to pages_show_path
         else
             render 'edit'
